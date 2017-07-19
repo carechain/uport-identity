@@ -208,4 +208,12 @@ contract IdentityManager {
         t := eq(a, and(mask, calldataload(4)))
     }
   }
+
+  function isOwner(address identity, address user) constant returns (bool) {
+    return owners[identity][user] != 0;
+  }
+
+  function isRecovery(address identity, address key) constant returns (bool) {
+    return recoveryKeys[identity] == key;
+  }
 }
