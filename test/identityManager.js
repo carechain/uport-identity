@@ -111,6 +111,28 @@ contract('IdentityManager', (accounts) => {
     assert.equal(proxyOwner, identityManager.address, 'Proxy owner should be the identity manager')
   })
 
+  it('Correctly creates Identity and calls', async function() {
+    let testNum = getRandomNumber()
+    // Encode the transaction to send to the proxy contract
+    let data = '0x' + lightwallet.txutils._encodeFunctionTxData('register', ['uint256'], [testNum])
+
+    let tx = await identityManager.createIdentityAndCall(user1, recoveryKey, testReg.address, data, {from: nobody})
+    let log = tx.logs[0]
+
+    assert.equal(log.event, 'IdentityCreated', 'wrong event')
+    assert.equal(log.args.owner, user1, 'Owner key is set in event')
+    assert.equal(log.args.recoveryKey, recoveryKey, 'Recovery key is set in event')
+    assert.equal(log.args.creator, nobody, 'Creator is set in event')
+
+    let proxyAddress = log.args.identity
+    await compareCode(proxyAddress, deployedProxy.address)
+    let proxyOwner = await Proxy.at(proxyAddress).owner.call()
+    assert.equal(proxyOwner, identityManager.address, 'Proxy owner should be the identity manager')
+
+    let regData = await testReg.registry.call(proxyAddress)
+    assert.equal(regData.toNumber(), testNum)
+  })
+
   describe('existing identity', () => {
 
     beforeEach(async function() {

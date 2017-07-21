@@ -110,6 +110,20 @@ contract IdentityManager {
     IdentityCreated(identity, msg.sender, owner,  recoveryKey);
   }
 
+  /// @dev Creates a new proxy contract for an owner and recovery, then makes a forward call using this proxy
+  /// @param owner Key who can use this contract to control proxy. Given full power
+  /// @param recoveryKey Key of recovery network or address from seed to recovery proxy
+  /// @param destination The destination of the call that will be made after the proxy creation
+  /// @param data The data that will be used in the call
+  /// Gas cost of ~300,000
+  function createIdentityAndCall(address owner, address recoveryKey, address destination, bytes data) validRecovery(recoveryKey) {
+    Proxy identity = new Proxy();
+    owners[identity][owner] = now - adminTimeLock; // This is to ensure original owner has full power from day one
+    recoveryKeys[identity] = recoveryKey;
+    IdentityCreated(identity, msg.sender, owner,  recoveryKey);
+    identity.forward(destination, 0, data);
+  }
+
   /// @dev Allows a user to transfer control of existing proxy to this contract. Must come through proxy
   /// @param owner Key who can use this contract to control proxy. Given full power
   /// @param recoveryKey Key of recovery network or address from seed to recovery proxy
