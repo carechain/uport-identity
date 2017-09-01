@@ -72,6 +72,12 @@ module.exports = {
         return getProvider("https://mainnet.infura.io/")
       },
       network_id: 1
+    },
+    carechain_test: {
+      host: 'localhost',
+      port: 8545,
+      network_id: 41358,
+      gas: 3141592
     }
   }
 };
